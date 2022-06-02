@@ -7,22 +7,16 @@ def argparser():
   parser = argparse.ArgumentParser()
   # for model
   parser.add_argument(
-      '--seq_window_lengths',
-      type=int,
-      nargs='+',
-      help='Space seperated list of motif filter lengths. (ex, --window_lengths 4 8 12)'
-  )
-  parser.add_argument(
       '--smi_window_lengths',
       type=int,
       nargs='+',
-      help='Space seperated list of motif filter lengths. (ex, --window_lengths 4 8 12)'
+      help='Space seperated list of motif filter lengths. (ex, --window_lengths  8 16)'
   )
   parser.add_argument(
       '--num_windows',
       type=int,
       nargs='+',
-      help='Space seperated list of the number of motif filters corresponding to length list. (ex, --num_windows 100 200 100)'
+      help='Space seperated list of the number of motif filters corresponding to length list. (ex, --num_windows 32 128)'
   )
   parser.add_argument(
       '--num_hidden',
@@ -30,23 +24,12 @@ def argparser():
       default=0,
       help='Number of neurons in hidden layer.'
   )
-  parser.add_argument(
-      '--num_classes',
-      type=int,
-      default=0,
-      help='Number of classes (families).'
-  )
-  parser.add_argument(
-      '--max_seq_len',
-      type=int,
-      default=0,
-      help='Length of input sequences.'
-  )
+   
   parser.add_argument(
       '--max_smi_len',
       type=int,
       default=0,
-      help='Length of input sequences.'
+      help='Length of drug sequences.'
   )
   # for learning
   parser.add_argument(
@@ -58,13 +41,13 @@ def argparser():
   parser.add_argument(
       '--num_epoch',
       type=int,
-      default=100,
-      help='Number of epochs to train.'
+      default=500,
+      help='Number of epochs to train.(250,500,1000)'
   )
   parser.add_argument(
       '--batch_size',
       type=int,
-      default=256,
+      default=706,
       help='Batch size. Must divide evenly into the dataset sizes.'
   )
   parser.add_argument(
@@ -77,14 +60,9 @@ def argparser():
       '--problem_type',
       type=int,
       default=1,
-      help='Type of the prediction problem (1-4)'
+      help='Type of the prediction problem '
   )
-  parser.add_argument(
-      '--binary_th',
-      type=float,
-      default=0.0,
-      help='Threshold to split data into binary classes'
-  )
+
   parser.add_argument(
       '--is_log',
       type=int,
@@ -103,27 +81,15 @@ def argparser():
       default='/tmp',
       help='Directory for log data.'
   )
-  parser.add_argument(
-      '--denseunits',
-      type=int,
-      nargs='+',
-      help='Space seperated list of motif filter lengths. (ex, --window_lengths 4 8 12)'
-  )
-
-
-
+ 
   FLAGS, unparsed = parser.parse_known_args()
 
-  # check validity
-  #assert( len(FLAGS.window_lengths) == len(FLAGS.num_windows) )
-
+  
   return FLAGS
-
-
 
 
 def logging(msg, FLAGS):
   fpath = os.path.join( FLAGS.log_dir, "log.txt" )
   with open( fpath, "a" ) as fw:
     fw.write("%s\n" % msg)
-  #print(msg)
+ 
