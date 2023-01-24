@@ -21,5 +21,5 @@ For training and evaluation of the method, you can run the following script.
  --batch_size 704 \
  --num_epoch 1000 \ 
  --max_smi_len 100 \
-  --dataset_path 'data/refined-Davis/' \
+  --dataset_path 'data/Davis/' \
 ```
