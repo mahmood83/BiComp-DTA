@@ -16,8 +16,8 @@ Numpy <br/>
 For training and evaluation of the method, you can run the following script.
 ```
 !python run_experiments.py
- --num_windows 128 32\
- --smi_window_lengths 4 8 16\
+ --num_windows 128 32 \
+ --smi_window_lengths 4 8 16 \
  --batch_size 704 \
  --num_epoch 1000 \ 
  --max_smi_len 100 \
@@ -30,8 +30,8 @@ Under the constraints of cold-start, BiComp-DTA can only predict binding affinit
 To train protein cold-start change value of problem_type to 2, to train drug cold-start change value of problem_type to 3 and to train protein-drug cold-start change value of problem_type to 3. For example you can use the following script to train protein cold-start:
 ```
 !python run_experiments.py
- --num_windows 128 32\
- --smi_window_lengths 4 8 16\
+ --num_windows 128 32 \
+ --smi_window_lengths 4 8 16 \
  --batch_size 704 \
  --num_epoch 1000 \ 
  --max_smi_len 100 \
