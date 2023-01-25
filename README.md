@@ -27,7 +27,7 @@ For training and evaluation of the method, you can run the following script.
 
 ## Cold-start
 Under the constraints of cold-start, BiComp-DTA can only predict binding affinity from unseen protein, unseen drug and both of them. <br/>
-To train protein cold-start change value of problem_type to 2, to train drug cold-start change value of problem_type to 3 and to train protein-drug cold-start change value of problem_type to 3. For example you can use the following script to train protein cold-start:
+To train protein cold-start change value of problem_type to 2, to train drug cold-start change value of problem_type to 3 and to train protein-drug cold-start change value of problem_type to 4. For example you can use the following script to train protein cold-start:
 ```
 !python run_experiments.py
  --num_windows 128 32 \
