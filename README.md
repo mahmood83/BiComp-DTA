@@ -20,7 +20,7 @@ For training and evaluation of the method, you can run the following script.
  --smi_window_lengths 4 8 16 \
  --batch_size 704 \
  --num_epoch 1000 \ 
- --max_smi_len 100 \
+ --max_smi_len 85 \
  --dataset_path 'data/Davis/' \
  --problem_type 1 \
 ```
