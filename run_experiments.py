@@ -37,12 +37,19 @@ sns.set_theme(style='white')
 
 figdir = "figures/"
 
-thresh = 7  # for davis,pdb,bindingdb=7 and kiba=12.1
 
 ################################
 # SimDTA(BiComp-DTA)
 def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
-    proteinFeatures = 442 # for daivs=442, kiba=229, pdb=1606, bindingdb=1088
+    fpath = FLAGS.dataset_path
+    if fpath=='data/davis/':
+        proteinFeatures = 442
+    elif fpath=='data/kiba/':
+        proteinFeatures = 229
+    elif fpath=='data/pdb/':
+        proteinFeatures = 1606
+    elif fpath=='data/bindingdb/':
+        proteinFeatures = 1088
     XDinput = Input(shape=(FLAGS.max_smi_len,), dtype='float32')
     XTinput = Input(shape=(proteinFeatures,), dtype='float32')
     encode_smiles = Embedding(input_dim=FLAGS.charsmiset_size + 1, output_dim=128, input_length=FLAGS.max_smi_len)(
@@ -214,7 +221,13 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
                     labels = []
                     for i in range(len(predicted_labels)):
                         labels.append(predicted_labels[i][0])
-
+                    
+                    fpath = FLAGS.dataset_path
+                    if fpath=='data/kiba/':
+                        thresh = 12.1
+                    else:
+                        thresh = 7
+                  
                     for i in range(len(val_Y)):
                         if (val_Y[i] > thresh):
                             val_Y[i] = 1
