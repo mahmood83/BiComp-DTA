@@ -2,7 +2,7 @@
 Drug-target binding affinity prediction through complementary biological-related and compression-based featurization approach
 
 ## Data
-We utilized four DTA datasets including Davis, Kiba, BindingDB, and PDBbind refine set. Davis and Kiba datasets were downloaded from here. BindingDB, and PDBbind datasets were downloaded from here, and here, respectively. It should be noted that you should register and login before downloading data files from the PDBbind repositories.
+We utilized four DTA datasets including Davis, Kiba, BindingDB, and PDBbind refine set. Davis and Kiba datasets were downloaded from [here](https://github.com/hkmztrk/DeepDTA/tree/master/data). BindingDB, and PDBbind datasets were downloaded from [here](https://tdcommons.ai/multi_pred_tasks/dti/), and [here](http://www.pdbbind.org.cn/download.php), respectively. It should be noted that you should register and login before downloading data files from the PDBbind repositories.
 <br/>
 Each dataset folder includes binding affinity (i.e. Y), protein sequences (i.e. proteins.txt), drug SMILES (i.e. ligands_can.txt), and encoded protein sequences (i.e. protVecLZMA1 and protVecSW) files, and a folder includes the train and test folds settings (i.e. folds).
 
