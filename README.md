@@ -22,6 +22,7 @@ For training and evaluation of the method, you can run the following script.
                           --max_smi_len 85 \
                           --dataset_path 'data/davis/' \
                           --problem_type 1 \
+                          --log_dir 'logs/' \
 ```
 
 ## Cold-start
@@ -35,4 +36,5 @@ To train protein cold-start change value of problem_type to 2, to train drug col
                           --max_smi_len 85 \
                           --dataset_path 'data/davis/' \
                           --problem_type 2 \
+                          --log_dir 'logs/' \
 ```
