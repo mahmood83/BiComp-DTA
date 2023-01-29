@@ -15,26 +15,24 @@ Numpy <br/>
 ## Usage
 For training and evaluation of the method, you can run the following script.
 ```
-!python run_experiments.py
- --num_windows 128 32 \
- --smi_window_lengths 4 8 16 \
- --batch_size 704 \
- --num_epoch 1000 \ 
- --max_smi_len 85 \
- --dataset_path 'data/davis/' \
- --problem_type 1 \
+!python run_experiments.py --num_windows 128 32 \
+                          --smi_window_lengths 4 8 16 \
+                          --batch_size 704 \
+                          --num_epoch 1000 \
+                          --max_smi_len 85 \
+                          --dataset_path 'data/Davis/' \
+                          --problem_type 1 \
 ```
 
 ## Cold-start
 Under the constraints of cold-start, BiComp-DTA can only predict binding affinity from unseen protein, unseen drug and both of them. <br/>
 To train protein cold-start change value of problem_type to 2, to train drug cold-start change value of problem_type to 3 and to train protein-drug cold-start change value of problem_type to 4. For example you can use the following script to train protein cold-start:
 ```
-!python run_experiments.py
- --num_windows 128 32 \
- --smi_window_lengths 4 8 16 \
- --batch_size 704 \
- --num_epoch 1000 \ 
- --max_smi_len 85 \
- --dataset_path 'data/davis/' \
- --problem_type 2 \
+!python run_experiments2.py --num_windows 128 32 \
+                          --smi_window_lengths 4 8 16 \
+                          --batch_size 704 \
+                          --num_epoch 1000 \
+                          --max_smi_len 85 \
+                          --dataset_path 'data/Davis/' \
+                          --problem_type 2 \
 ```
