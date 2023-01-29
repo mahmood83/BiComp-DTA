@@ -13,12 +13,9 @@ from sklearn.metrics import average_precision_score
 from keras import backend as K
 from datahelper import *
 from arguments import argparser, logging
-from keras.layers import Dense, Dropout, Activation
-from keras.layers import Conv1D, GlobalMaxPooling1D, MaxPooling1D, UpSampling1D, GlobalAveragePooling1D
-from keras.layers import Conv2D, GRU, SeparableConv1D
-from keras.layers import Input, Embedding, LSTM, Dense, TimeDistributed, Masking, RepeatVector, Flatten
+from keras.layers import Conv1D, GlobalMaxPooling1D, SeparableConv1D, Input, Embedding, Dense, Dropout, Activation
 from keras.models import Model
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.callbacks import EarlyStopping
 from copy import deepcopy
 from emetrics import get_rm2
 
@@ -37,10 +34,10 @@ sns.set_theme(style='white')
 
 figdir = "figures/"
 
-
 ################################
 # SimDTA(BiComp-DTA)
-def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
+def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1):
+    
     fpath = FLAGS.dataset_path
     if fpath=='data/davis/':
         proteinFeatures = 442
@@ -50,11 +47,10 @@ def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGT
         proteinFeatures = 1606
     elif fpath=='data/bindingdb/':
         proteinFeatures = 1088
+        
     XDinput = Input(shape=(FLAGS.max_smi_len,), dtype='float32')
-    XTinput = Input(shape=(proteinFeatures,), dtype='float32')
     encode_smiles = Embedding(input_dim=FLAGS.charsmiset_size + 1, output_dim=128, input_length=FLAGS.max_smi_len)(
         XDinput)
-
     encode_smiles = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH1, activation='relu', padding='valid',
                            strides=1)(encode_smiles)
     encode_smiles = Conv1D(filters=NUM_FILTERS * 2, kernel_size=FILTER_LENGTH1, activation='relu', padding='valid',
@@ -62,7 +58,8 @@ def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGT
     encode_smiles = SeparableConv1D(filters=NUM_FILTERS * 3, kernel_size=FILTER_LENGTH1, activation='relu',
                                     padding='valid', strides=1)(encode_smiles)
     encode_smiles = GlobalMaxPooling1D()(encode_smiles)
-
+    
+    XTinput = Input(shape=(proteinFeatures,), dtype='float32')
     encode_protein = Dense(128, activation='relu')(XTinput)
     encode_protein = Dropout(0.2)(encode_protein)
     encode_protein = Dense(128, activation='relu')(encode_protein)
@@ -161,14 +158,13 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
 
     paramset1 = FLAGS.num_windows
     paramset2 = FLAGS.smi_window_lengths
-    paramset3 = FLAGS.seq_window_lengths
     epoch = FLAGS.num_epoch
     batchsz = FLAGS.batch_size
 
     logging("---Parameter Search-----", FLAGS)
 
     w = len(val_sets)
-    h = len(paramset1) * len(paramset2) * len(paramset3)
+    h = len(paramset1) * len(paramset2)
 
     all_predictions = [[0 for x in range(w)] for y in range(h)]
     all_losses = [[0 for x in range(w)] for y in range(h)]
@@ -195,66 +191,63 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
             for param2ind in range(len(paramset2)):  # learning rate
                 param2value = paramset2[param2ind]
 
-                for param3ind in range(len(paramset3)):
-                    param3value = paramset3[param3ind]
+                gridmodel = runmethod(FLAGS, param1value, param2value)
+                es = EarlyStopping(monitor='val_cindex_score', mode='max', verbose=1, patience=300,
+                                   restore_best_weights=True, )
+                gridres = gridmodel.fit(([np.array(train_drugs), np.array(train_prots)]), np.array(train_Y),
+                                        batch_size=batchsz, epochs=epoch,
+                                        validation_data=(
+                                            ([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y)),
+                                        shuffle=False, callbacks=[es])
 
-                    gridmodel = runmethod(FLAGS, param1value, param2value, param3value)
-                    es = EarlyStopping(monitor='val_cindex_score', mode='max', verbose=1, patience=300,
-                                       restore_best_weights=True, )
-                    gridres = gridmodel.fit(([np.array(train_drugs), np.array(train_prots)]), np.array(train_Y),
-                                            batch_size=batchsz, epochs=epoch,
-                                            validation_data=(
-                                                ([np.array(val_drugs), np.array(val_prots)]), np.array(val_Y)),
-                                            shuffle=False, callbacks=[es])
+                predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
 
-                    predicted_labels = gridmodel.predict([np.array(val_drugs), np.array(val_prots)])
+                lst = gridres.history['val_cindex_score']
+                lst2 = gridres.history['val_loss']
+                rperf = max(lst)
+                index = lst.index(rperf)
+                loss = lst2[index]
 
-                    lst = gridres.history['val_cindex_score']
-                    lst2 = gridres.history['val_loss']
-                    rperf = max(lst)
-                    index = lst.index(rperf)
-                    loss = lst2[index]
+                rm2 = get_rm2(val_Y, predicted_labels)
 
-                    rm2 = get_rm2(val_Y, predicted_labels)
-
-                    predicted_labels = predicted_labels.tolist()
-                    labels = []
-                    for i in range(len(predicted_labels)):
-                        labels.append(predicted_labels[i][0])
-                    
-                    fpath = FLAGS.dataset_path
-                    if fpath=='data/kiba/':
-                        thresh = 12.1
+                predicted_labels = predicted_labels.tolist()
+                labels = []
+                for i in range(len(predicted_labels)):
+                    labels.append(predicted_labels[i][0])
+                
+                fpath = FLAGS.dataset_path
+                if fpath=='data/kiba/':
+                    thresh = 12.1
+                else:
+                    thresh = 7
+              
+                for i in range(len(val_Y)):
+                    if (val_Y[i] > thresh):
+                        val_Y[i] = 1
                     else:
-                        thresh = 7
-                  
-                    for i in range(len(val_Y)):
-                        if (val_Y[i] > thresh):
-                            val_Y[i] = 1
-                        else:
-                            val_Y[i] = 0
+                        val_Y[i] = 0
 
-                    aupr = average_precision_score(val_Y, labels)
+                aupr = average_precision_score(val_Y, labels)
 
-                    logging(
-                        "P1 = %d,  P2 = %d, P3 = %d, Fold = %d, CI = %f, MSE = %f, aupr = %f , r2m = %f" %
-                        (param1ind, param2ind, param3ind, foldind, rperf, loss, aupr, rm2), FLAGS)
+                logging(
+                    "P1 = %d,  P2 = %d, Fold = %d, CI = %f, MSE = %f, aupr = %f , r2m = %f" %
+                    (param1ind, param2ind, foldind, rperf, loss, aupr, rm2), FLAGS)
 
-                    df = pd.DataFrame(list(zip(labels, val_Y)),
-                                      columns=['Predicted', 'Measured'])
+                df = pd.DataFrame(list(zip(labels, val_Y)),
+                                  columns=['Predicted', 'Measured'])
 
-                    x = sns.relplot(data=df, x="Predicted", y="Measured", s=20)
-                    x.fig.set_size_inches(6.6, 5.5)
-                    plt.savefig("figures/scatter.tiff", bbox_inches='tight', pad_inches=0.5, dpi=300,
-                                pil_kwargs={"compression": "tiff_lzw"})
-                    plt.close()
+                x = sns.relplot(data=df, x="Predicted", y="Measured", s=20)
+                x.fig.set_size_inches(6.6, 5.5)
+                plt.savefig("figures/scatter.tiff", bbox_inches='tight', pad_inches=0.5, dpi=300,
+                            pil_kwargs={"compression": "tiff_lzw"})
+                plt.close()
 
-                    plotLoss(gridres, param1ind, param2ind, param3ind, foldind)
+                plotLoss(gridres, param1ind, param2ind, foldind)
 
-                    all_predictions[pointer][foldind] = rperf  # TODO FOR EACH VAL SET allpredictions[pointer][foldind]
-                    all_losses[pointer][foldind] = loss
+                all_predictions[pointer][foldind] = rperf  # TODO FOR EACH VAL SET allpredictions[pointer][foldind]
+                all_losses[pointer][foldind] = loss
 
-                    pointer += 1
+                pointer += 1
 
     bestperf = -float('Inf')
     bestpointer = None
@@ -264,7 +257,6 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
     pointer = 0
     for param1ind in range(len(paramset1)):
         for param2ind in range(len(paramset2)):
-            for param3ind in range(len(paramset3)):
 
                 avgperf = 0.
                 for foldind in range(len(val_sets)):
@@ -274,7 +266,7 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
                 if avgperf > bestperf:
                     bestperf = avgperf
                     bestpointer = pointer
-                    best_param_list = [param1ind, param2ind, param3ind]
+                    best_param_list = [param1ind, param2ind]
 
                 pointer += 1
 
@@ -294,8 +286,8 @@ def cindex_score(y_true, y_pred):
     return tf.where(tf.equal(g, 0), 0.0, g / f)  # select
 
 
-def plotLoss(history, batchind, epochind, param3ind, foldind):
-    figname = "b" + str(batchind) + "_e" + str(epochind) + "_" + str(param3ind) + "_" + str(foldind) + "_" + str(
+def plotLoss(history, batchind, epochind, foldind):
+    figname = "b" + str(batchind) + "_e" + str(epochind) + "_" + str(foldind) + "_" + str(
         time.time())
     plt.figure()
     plt.plot(history.history['loss'])
