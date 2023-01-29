@@ -20,7 +20,7 @@ For training and evaluation of the method, you can run the following script.
                           --batch_size 704 \
                           --num_epoch 1000 \
                           --max_smi_len 85 \
-                          --dataset_path 'data/Davis/' \
+                          --dataset_path 'data/davis/' \
                           --problem_type 1 \
 ```
 
@@ -33,6 +33,6 @@ To train protein cold-start change value of problem_type to 2, to train drug col
                           --batch_size 704 \
                           --num_epoch 1000 \
                           --max_smi_len 85 \
-                          --dataset_path 'data/Davis/' \
+                          --dataset_path 'data/davis/' \
                           --problem_type 2 \
 ```
