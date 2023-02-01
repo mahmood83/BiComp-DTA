@@ -38,13 +38,13 @@ python run_experiments.py --num_windows 128 32 \
                           --problem_type 2 \
                           --log_dir 'logs/' \
 ```
-Also an alternative splitting setting in protein family level for the PDBbind dataset is considered. Drug-target pairs including HIV-1 protease variants are excluded from the training set and are considered for testing model. 
-For training and evaluation of the method, you can run the following script. <br/>
+Also an alternative splitting setting in protein family level for the PDBbind dataset is considered. Drug-target pairs including HIV-1 protease variants are excluded from the training set and are considered for testing model.  <br/>
+For training and evaluation of the method, you can run the following script:
 ```
 python run_experiments.py --num_windows 128 32 \
                           --smi_window_lengths 4 8 16 \
                           --batch_size 704 \
-                          --num_epoch 1000 \
+                          --num_epoch 500 \
                           --max_smi_len 200 \
                           --dataset_path 'data/pdb/' \
                           --problem_type 2 \
