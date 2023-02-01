@@ -219,14 +219,15 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
                     thresh = 12.1
                 else:
                     thresh = 7
-              
+                
+                temp = []
                 for i in range(len(val_Y)):
                     if (val_Y[i] > thresh):
-                        val_Y[i] = 1
+                        temp.append(1)
                     else:
-                        val_Y[i] = 0
+                        temp.append(0)
 
-                aupr = average_precision_score(val_Y, labels)
+                aupr = average_precision_score(temp, labels)
 
                 logging(
                     "P1 = %d,  P2 = %d, Fold = %d, CI = %f, MSE = %f, aupr = %f , r2m = %f" %
