@@ -34,7 +34,6 @@ sns.set_theme(style='white')
 
 figdir = "figures/"
 
-################################
 # SimDTA(BiComp-DTA)
 def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1):
     
@@ -66,7 +65,7 @@ def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1):
     encode_protein = Dropout(0.2)(encode_protein)
     encode_protein = Dense(76, activation='relu')(encode_protein)
     encode_interaction = keras.layers.concatenate([encode_smiles, encode_protein],
-                                                  axis=-1)  # merge.Add()([encode_smiles, encode_protein])
+                                                  axis=-1)
 
     # Fully connected
     FC1 = Dense(1024, activation='relu')(encode_interaction)
@@ -77,12 +76,12 @@ def build_combined_categorical1(FLAGS, NUM_FILTERS, FILTER_LENGTH1):
 
     # And add a logistic regression on top
     predictions = Dense(1, kernel_initializer='normal')(
-        FC2)  # OR no activation, rght now it's between 0-1, do I want this??? activation='sigmoid'
+        FC2)
 
     interactionModel = Model(inputs=[XDinput, XTinput], outputs=[predictions])
     opt = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-07, decay=0.0, amsgrad=False)
     interactionModel.compile(optimizer=opt, loss='mean_squared_error',
-                             metrics=[cindex_score])  # , metrics=['cindex_score']
+                             metrics=[cindex_score])
     print(interactionModel.summary())
 
     return interactionModel
@@ -154,7 +153,7 @@ def nfold_1_2_3_setting_sample(XD, XT, Y, label_row_inds, label_col_inds, runmet
 
 
 def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS, labeled_sets,
-                     val_sets):  ## BURAYA DA FLAGS LAZIM????
+                     val_sets):
 
     paramset1 = FLAGS.num_windows
     paramset2 = FLAGS.smi_window_lengths
@@ -186,9 +185,9 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
 
         pointer = 0
 
-        for param1ind in range(len(paramset1)):  # hidden neurons
+        for param1ind in range(len(paramset1)):
             param1value = paramset1[param1ind]
-            for param2ind in range(len(paramset2)):  # learning rate
+            for param2ind in range(len(paramset2)):
                 param2value = paramset2[param2ind]
 
                 gridmodel = runmethod(FLAGS, param1value, param2value)
@@ -238,7 +237,10 @@ def general_nfold_cv(XD, XT, Y, label_row_inds, label_col_inds, runmethod, FLAGS
 
                 x = sns.relplot(data=df, x="Predicted", y="Measured", s=20)
                 x.fig.set_size_inches(6.6, 5.5)
-                plt.savefig("figures/scatter.tiff", bbox_inches='tight', pad_inches=0.5, dpi=300,
+                
+                figname = "scatter_b" + str(param1ind) + "_e" + str(param2ind) + "_" + str(foldind) + "_" + str(
+                time.time())
+                plt.savefig("figures/" + figname + ".tiff", bbox_inches='tight', pad_inches=0.5, dpi=300,
                             pil_kwargs={"compression": "tiff_lzw"})
                 plt.close()
 
@@ -299,7 +301,7 @@ def plotLoss(history, batchind, epochind, foldind):
                 papertype=None, format=None, transparent=False, bbox_inches=None, pad_inches=0.1, frameon=None)
     plt.close()
 
-    ## PLOT CINDEX
+    # PLOT CINDEX
     plt.figure()
     plt.ylabel('c_index(CI)')
     plt.xlabel('Epoch')
@@ -332,14 +334,6 @@ def prepare_interaction_pairs(XD, XT, Y, rows, cols):
 
 
 def experiment(FLAGS, deepmethod, foldcount=6):  # 5-fold cross validation + test
-
-    # Input
-    # XD: [drugs, features] sized array (features may also be similarities with other drugs
-    # XT: [targets, features] sized array (features may also be similarities with other targets
-    # Y: interaction values, can be real values or binary (+1, -1), insert value float("nan") for unknown entries
-    # perfmeasure: function that takes as input a list of correct and predicted outputs, and returns performance
-    # higher values should be better, so if using error measures use instead e.g. the inverse -error(Y, P)
-    # foldcount: number of cross-validation folds for settings 1-3, setting 4 always runs 3x3 cross-validation
 
     dataset = DataSet(fpath=FLAGS.dataset_path,
                       setting_no=FLAGS.problem_type,
