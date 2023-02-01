@@ -1,4 +1,3 @@
-  
 import numpy as np
 import subprocess
 
@@ -47,18 +46,10 @@ def get_cindex(Y, P):
 def r_squared_error(y_obs, y_pred):
     y_obs = np.array(y_obs)
     y_pred = np.array(y_pred)
-    #y_pred = np.concatenate(y_pred, axis=0)
 
-    # print("&&&&&&")
-    # print(y_obs)
-    # print("%%%%%%%%%")
-    # print(y_pred)
     y_obs_mean = [np.mean(y_obs) for y in y_obs]
     y_pred_mean = [np.mean(y_pred) for y in y_pred]
-    # print("y_obs_mean is: \n")
-    # print(y_obs_mean)
-    # print("y_pred_mean is: \n")
-    # print(y_pred_mean)
+
     mult = sum((y_pred - y_pred_mean) * (y_obs - y_obs_mean))
     mult = mult * mult
     y_obs_sq = sum((y_obs - y_obs_mean) * (y_obs - y_obs_mean))
@@ -69,7 +60,6 @@ def r_squared_error(y_obs, y_pred):
 def get_k(y_obs, y_pred):
     y_obs = np.array(y_obs)
     y_pred = np.array(y_pred)
-  #  y_pred = np.concatenate(y_pred, axis=0)
 
     return sum(y_obs * y_pred) / float(sum(y_pred * y_pred))
 
@@ -79,7 +69,6 @@ def squared_error_zero(y_obs, y_pred):
 
     y_obs = np.array(y_obs)
     y_pred = np.array(y_pred)
-    #y_pred = np.concatenate(y_pred)
    
     y_obs_mean = [np.mean(y_obs) for y in y_obs]
     upp = sum((y_obs - (k * y_pred)) * (y_obs - (k * y_pred)))
@@ -89,11 +78,6 @@ def squared_error_zero(y_obs, y_pred):
 
 
 def get_rm2(ys_orig, ys_line):
-    # print("y orig is:\n")
-    # print(ys_orig)
-    # print("y line is:\n")
-    # print(ys_line)
-    #ys_orig = np.concatenate(ys_orig)
     ys_line = np.concatenate(ys_line)
     r2 = r_squared_error(ys_orig, ys_line)
     r02 = squared_error_zero(ys_orig, ys_line)
